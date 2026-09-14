@@ -1,0 +1,9 @@
+{
+  "name": "rugbyscore",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Springbok-inspired rugby scoreboard",
+  "dependencies": {
+    "@netlify/blobs": "11.1.0"
+  }
+}

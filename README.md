@@ -5,11 +5,14 @@ RugbyScore is a small rugby scoreboard built with HTML, CSS and JavaScript as a 
 ## Features
 
 - Separate Home and Guest scores, starting at zero.
-- Add a conversion (+2), penalty goal (+3), or try (+5) to either team.
+- Add a conversion (+2), penalty goal (+3), try (+5), drop goal (+3), or penalty try (+7).
 - For a converted try, click Try and then Conversion: 5 + 2 = 7.
-- Fixed 575 × 385px board with named scoring buttons.
+- Responsive layout with a maximum desktop width of 575px.
+- Undo the latest scoring action across either team.
+- Start a new game, with confirmation before clearing an active game.
+- Hover, pressed and keyboard-focus feedback on buttons.
 - Digital-style numbers using the Cursed Timer font.
-- Scores reset when the page is refreshed.
+- Scores and undo history survive refresh using browser local storage. If storage is unavailable, scoring still works for the current visit.
 
 ## Run locally
 
@@ -28,4 +31,4 @@ Translating Figma measurements into CSS, using Flexbox, loading a custom font, a
 
 ## Rugby scoring
 
-These buttons cover tries, conversions and penalty goals. A drop goal also earns 3 points, and a penalty try earns 7; neither has a dedicated button in this simple version. See [World Rugby’s scoring rules](https://passport.world.rugby/laws-of-the-game/laws-by-number/8-scoring).
+A converted try is a try (+5) followed by a successful conversion (+2). A penalty try is worth 7 points with no conversion; its button adds all seven at once. See [World Rugby’s scoring rules](https://passport.world.rugby/laws-of-the-game/laws-by-number/8-scoring).

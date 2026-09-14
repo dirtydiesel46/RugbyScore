@@ -1,100 +1,118 @@
-/* Custom scoreboard font */
+/* Digital score font */
 @font-face {
     font-family: "Cursed Timer";
     src: url("fonts/misc/CursedTimerUlil-Aznm.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
+    font-display: swap;
 }
 
-/* Page background */
+/* Springbok-inspired green and gold */
+* { box-sizing: border-box; }
 body {
     margin: 0;
     background: #004B3C;
-}
-
-/* Scoreboard: two team columns within a fixed-size board */
-.container {
-    display: flex;
-    justify-content: space-around;
-
-    width: 575px;
-    height: 385px;
-    box-sizing: border-box;
-    margin: 0 auto;
-    padding: 40px 0;
-
+    color: #FFB81C;
     font-family: Arial, sans-serif;
-    font-weight: 700;
+}
+
+/* Let the board grow vertically to fit the extra controls. */
+.container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 32px;
+    width: 100%;
+    max-width: 575px;
+    margin: 0 auto;
+    padding: 40px 20px;
     text-align: center;
-    color: #FFB81C;
 }
-
-.container > div {
-    width: 215px;
-}
-
-/* Team headings: remove the browser's default margins */
-.container h3 {
+.team { min-width: 0; }
+.team h2 {
     margin: 0;
-
-    font-size: 40px;
-    line-height: 36px;
+    font-size: 36px;
+    line-height: 1;
 }
-
-/* Score display */
 .score {
-    width: 155px;
-    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 200px;
+    min-height: 120px;
     margin: 21px auto 0;
-
+    padding: 8px;
+    overflow-wrap: anywhere;
     font-family: "Cursed Timer", monospace;
-    font-size: 90px;
-    font-weight: 400;
-    line-height: 127px;
-    color: #FFB81C;
-
-    background-color: #002B23;
+    font-size: 64px;
+    line-height: 1.2;
+    background: #002B23;
     border-radius: 5px;
 }
 
-/* Button row: 26px below the score, 10px between buttons */
+/* Two columns keep every scoring name readable. */
 .increment {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-
     margin-top: 26px;
 }
-
-/* Rugby buttons: scoring name above the points added */
+.increment button:last-child { grid-column: 1 / -1; }
+button {
+    min-height: 48px;
+    padding: 8px;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 2px solid #FFB81C;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 120ms, color 120ms, transform 120ms;
+}
 .increment button {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
-    width: 65px;
-    height: 60px;
-    box-sizing: border-box;
-    padding: 0;
-
+    gap: 4px;
+    min-height: 64px;
     font-family: "Cursed Timer", monospace;
     font-size: 18px;
-    font-weight: 400;
-    line-height: 27.81px;
-    color: #FFB81C;
-
-    background: transparent;
-    border: 2px solid #FFB81C;
-    border-radius: 5px;
-
-    cursor: pointer;
 }
-
-/* Use a readable font for the longer scoring names */
 .point-label {
     font-family: Arial, sans-serif;
-    font-size: 10px;
-    line-height: 16px;
-    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1.3;
+}
+@media (hover: hover) {
+    button:hover:not(:disabled) { background: #FFB81C; color: #002B23; }
+}
+button:active:not(:disabled) { transform: scale(0.96); }
+button:focus-visible { outline: 3px solid white; outline-offset: 4px; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.game-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    grid-column: 1 / -1;
+}
+.game-status {
+    grid-column: 1 / -1;
+    min-height: 1.5em;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Keep both teams visible on phones without horizontal scrolling. */
+@media (max-width: 420px) {
+    .container { padding: 24px 12px; column-gap: 16px; }
+    .team h2 { font-size: 28px; }
+    .score { font-size: 48px; min-height: 100px; }
+    .increment { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    button { transition: none; }
+    button:active:not(:disabled) { transform: none; }
 }
