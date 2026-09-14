@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/core/schema/stryker-schema.json",
+  "mutate": ["index.js"],
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "npm test"
+  },
+  "reporters": ["progress", "clear-text", "html"],
+  "coverageAnalysis": "off",
+  "concurrency": 2
+}

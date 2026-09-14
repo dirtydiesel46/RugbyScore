@@ -28,6 +28,12 @@ Unit tests use Node.js's built-in test runner (`node:test` and `node:assert`):
 npm test
 ```
 
+Mutation testing can be run with StrykerJS to verify test suite quality:
+
+```bash
+npm run test:mutate
+```
+
 A GitHub Actions workflow (`.github/workflows/ci.yml`) runs these tests automatically on pushes and pull requests targeting `main` to serve as merge checks.
 
 ## Project files

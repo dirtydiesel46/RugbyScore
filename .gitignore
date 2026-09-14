@@ -4,3 +4,7 @@
 
 .package-lock.json
 node_modules
+
+# Stryker mutation testing
+.stryker-tmp
+reports

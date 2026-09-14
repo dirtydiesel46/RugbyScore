@@ -4,9 +4,13 @@
   "private": true,
   "description": "Springbok-inspired rugby scoreboard",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:mutate": "stryker run"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.0.0"
   }
 }
