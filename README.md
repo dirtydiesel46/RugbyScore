@@ -1,6 +1,6 @@
-# Rugby Scoreboard
+# RugbyScore
 
-A small rugby scoreboard built with HTML, CSS and JavaScript. Originally a Scrimba basketball scoreboard exercise based on a Figma design, adapted with Springbok-inspired green and gold colours.
+RugbyScore is a small rugby scoreboard built with HTML, CSS and JavaScript as a Scrimba learning project, with Springbok-inspired green and gold colours.
 
 ## Features
 
