@@ -1,6 +1,30 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+// Set up minimal browser environment mock for DOM and storage integration
+const domElements = new Map();
+function getMockElement(id) {
+    if (!domElements.has(id)) {
+        domElements.set(id, { textContent: "", disabled: false });
+    }
+    return domElements.get(id);
+}
+
+const mockStorage = new Map();
+let confirmReturnValue = true;
+
+global.document = {
+    getElementById: (id) => getMockElement(id)
+};
+
+global.window = {
+    localStorage: {
+        getItem: (key) => (mockStorage.has(key) ? mockStorage.get(key) : null),
+        setItem: (key, val) => mockStorage.set(key, String(val))
+    },
+    confirm: () => confirmReturnValue
+};
+
 const {
     storageKey,
     VALID_POINTS,
@@ -11,10 +35,23 @@ const {
     add,
     undoLastScore,
     newGame,
+    render,
+    save,
+    init,
     scores,
     getHistory,
     setHistory
 } = require("../index.js");
+
+function resetEnvironment() {
+    setHistory([]);
+    scores["home-score"] = 0;
+    scores["guest-score"] = 0;
+    mockStorage.clear();
+    domElements.clear();
+    confirmReturnValue = true;
+    render();
+}
 
 test("scoring configuration", () => {
     assert.deepEqual(VALID_POINTS, [2, 3, 5, 7], "Points should follow rugby scoring values");
@@ -80,11 +117,11 @@ test("calculateScores pure logic", async (t) => {
 
     await t.test("calculates mixed scoring between both teams independently", () => {
         const matchHistory = [
-            { amount: 5, elementId: "home-score" },  // Home try (5)
-            { amount: 2, elementId: "home-score" },  // Home conversion (7)
-            { amount: 3, elementId: "guest-score" }, // Guest penalty (3)
-            { amount: 7, elementId: "guest-score" }, // Guest penalty try (10)
-            { amount: 3, elementId: "home-score" }   // Home penalty (10)
+            { amount: 5, elementId: "home-score" },
+            { amount: 2, elementId: "home-score" },
+            { amount: 3, elementId: "guest-score" },
+            { amount: 7, elementId: "guest-score" },
+            { amount: 3, elementId: "home-score" }
         ];
         const totals = calculateScores(matchHistory);
         assert.deepEqual(totals, { "home-score": 10, "guest-score": 10 });
@@ -139,48 +176,58 @@ test("parseSavedGame deserialization and security", async (t) => {
 });
 
 test("state machine actions: add, undo, and newGame", async (t) => {
-    t.beforeEach(() => {
-        setHistory([]);
-        scores["home-score"] = 0;
-        scores["guest-score"] = 0;
-    });
+    t.beforeEach(resetEnvironment);
 
-    await t.test("add appends valid actions and updates scores", () => {
+    await t.test("add appends valid actions and updates scores, DOM, and status", () => {
         add(5, "home-score");
         assert.equal(getHistory().length, 1);
         assert.equal(scores["home-score"], 5);
         assert.equal(scores["guest-score"], 0);
+        assert.equal(document.getElementById("home-score").textContent, 5);
+        assert.equal(document.getElementById("game-status").textContent, "Home +5.");
+        assert.equal(document.getElementById("undo-button").disabled, false);
 
         add(3, "guest-score");
         assert.equal(getHistory().length, 2);
         assert.equal(scores["home-score"], 5);
         assert.equal(scores["guest-score"], 3);
+        assert.equal(document.getElementById("guest-score").textContent, 3);
+        assert.equal(document.getElementById("game-status").textContent, "Guest +3.");
     });
 
     await t.test("add rejects invalid actions without modifying state", () => {
-        add(4, "home-score"); // 4 is not a rugby score
+        add(4, "home-score");
         add(5, "unknown-team");
         assert.equal(getHistory().length, 0);
         assert.equal(scores["home-score"], 0);
         assert.equal(scores["guest-score"], 0);
     });
 
-    await t.test("undoLastScore removes latest action and recalculates correctly", () => {
+    await t.test("undoLastScore removes latest action and updates team scores and status", () => {
         add(5, "home-score");
         add(2, "home-score");
         add(3, "guest-score");
         assert.equal(scores["home-score"], 7);
         assert.equal(scores["guest-score"], 3);
 
-        undoLastScore(); // Undoes Guest +3
+        undoLastScore();
         assert.equal(getHistory().length, 2);
         assert.equal(scores["home-score"], 7);
         assert.equal(scores["guest-score"], 0);
+        assert.equal(document.getElementById("game-status").textContent, "Undid Guest +3.");
+        assert.equal(document.getElementById("undo-button").disabled, false);
 
-        undoLastScore(); // Undoes Home +2
+        undoLastScore();
         assert.equal(getHistory().length, 1);
         assert.equal(scores["home-score"], 5);
         assert.equal(scores["guest-score"], 0);
+        assert.equal(document.getElementById("game-status").textContent, "Undid Home +2.");
+
+        undoLastScore();
+        assert.equal(getHistory().length, 0);
+        assert.equal(scores["home-score"], 0);
+        assert.equal(scores["guest-score"], 0);
+        assert.equal(document.getElementById("undo-button").disabled, true);
     });
 
     await t.test("undoLastScore on empty history does not fail or produce negative scores", () => {
@@ -188,9 +235,10 @@ test("state machine actions: add, undo, and newGame", async (t) => {
         assert.equal(getHistory().length, 0);
         assert.equal(scores["home-score"], 0);
         assert.equal(scores["guest-score"], 0);
+        assert.equal(document.getElementById("undo-button").disabled, true);
     });
 
-    await t.test("newGame resets all state to zero", () => {
+    await t.test("newGame resets state when confirmed", () => {
         add(5, "home-score");
         add(3, "guest-score");
         assert.equal(getHistory().length, 2);
@@ -199,5 +247,106 @@ test("state machine actions: add, undo, and newGame", async (t) => {
         assert.equal(getHistory().length, 0);
         assert.equal(scores["home-score"], 0);
         assert.equal(scores["guest-score"], 0);
+        assert.equal(document.getElementById("home-score").textContent, 0);
+        assert.equal(document.getElementById("guest-score").textContent, 0);
+        assert.equal(document.getElementById("undo-button").disabled, true);
+        assert.equal(document.getElementById("game-status").textContent, "New game. Both scores reset to zero.");
+    });
+
+    await t.test("newGame preserves state when confirmation is cancelled", () => {
+        add(5, "home-score");
+        confirmReturnValue = false;
+
+        newGame();
+        assert.equal(getHistory().length, 1);
+        assert.equal(scores["home-score"], 5);
+    });
+
+    await t.test("newGame on empty history resets without confirmation", () => {
+        confirmReturnValue = false;
+        newGame();
+        assert.equal(getHistory().length, 0);
+        assert.equal(document.getElementById("game-status").textContent, "New game. Both scores reset to zero.");
+    });
+});
+
+test("storage failure and init integration", async (t) => {
+    t.beforeEach(resetEnvironment);
+
+    await t.test("save gracefully catches localStorage errors", () => {
+        const originalSetItem = window.localStorage.setItem;
+        window.localStorage.setItem = () => {
+            throw new Error("QuotaExceeded");
+        };
+
+        try {
+            save("Custom message");
+            assert.equal(
+                document.getElementById("game-status").textContent,
+                "Scores work, but this browser could not save them for refresh."
+            );
+        } finally {
+            window.localStorage.setItem = originalSetItem;
+        }
+    });
+
+    await t.test("init restores saved game from storage", () => {
+        window.localStorage.setItem(
+            storageKey,
+            JSON.stringify([
+                { amount: 5, elementId: "home-score" },
+                { amount: 2, elementId: "home-score" }
+            ])
+        );
+
+        init();
+        assert.equal(getHistory().length, 2);
+        assert.equal(scores["home-score"], 7);
+        assert.equal(document.getElementById("home-score").textContent, 7);
+        assert.equal(document.getElementById("game-status").textContent, "Saved game restored.");
+        assert.equal(document.getElementById("undo-button").disabled, false);
+    });
+
+    await t.test("init handles empty saved array without restored message", () => {
+        window.localStorage.setItem(storageKey, "[]");
+        init();
+        assert.equal(getHistory().length, 0);
+        assert.equal(document.getElementById("game-status").textContent, "");
+    });
+
+    await t.test("init handles corrupted storage gracefully", () => {
+        window.localStorage.setItem(storageKey, "{ not-valid-json");
+
+        init();
+        assert.equal(getHistory().length, 0);
+        assert.equal(scores["home-score"], 0);
+        assert.equal(
+            document.getElementById("game-status").textContent,
+            "Saved game unavailable. Starting at zero."
+        );
+    });
+
+    await t.test("handles missing DOM elements safely", () => {
+        const originalGetById = global.document.getElementById;
+        global.document.getElementById = () => null;
+        try {
+            render();
+            save("No crash");
+            init();
+        } finally {
+            global.document.getElementById = originalGetById;
+        }
+    });
+
+    await t.test("init and save handle missing localStorage safely", () => {
+        const originalStorage = global.window.localStorage;
+        delete global.window.localStorage;
+        try {
+            save("Storage missing");
+            init();
+            assert.equal(document.getElementById("game-status").textContent, "Storage missing");
+        } finally {
+            global.window.localStorage = originalStorage;
+        }
     });
 });

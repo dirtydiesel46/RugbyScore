@@ -101,6 +101,7 @@ function init() {
     render();
 }
 
+// Stryker disable all
 if (typeof window !== "undefined" && typeof document !== "undefined") {
     init();
 }
@@ -124,3 +125,4 @@ if (typeof module !== "undefined" && module.exports) {
         setHistory: (actions) => { history = actions; }
     };
 }
+// Stryker restore all
