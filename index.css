@@ -1,8 +1,87 @@
-body {
-    margin: 0;
+/* Custom scoreboard font */
+@font-face {
+    font-family: "Cursed Timer";
+    src: url("fonts/misc/CursedTimerUlil-Aznm.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
+/* Page background */
+body {
+    margin: 0;
+    background: #1B244A;
+}
+
+/* Scoreboard: two team columns within a fixed-size board */
 .container {
     display: flex;
     justify-content: space-around;
+
+    width: 575px;
+    height: 385px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 40px 0;
+
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+    text-align: center;
+    color: #EEEEEE;
+}
+
+/* Team headings: remove the browser's default margins */
+.container h3 {
+    margin: 0;
+
+    font-size: 40px;
+    line-height: 36px;
+}
+
+/* Score display */
+.score {
+    width: 155px;
+    height: 120px;
+    margin-top: 21px;
+
+    font-family: "Cursed Timer", monospace;
+    font-size: 90px;
+    font-weight: 400;
+    line-height: 127px;
+    color: #F94F6D;
+
+    background-color: #080001;
+    border-radius: 5px;
+}
+
+/* Button row: 26px below the score, 10px between buttons */
+.increment {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+    margin-top: 26px;
+}
+
+/* Point buttons: centre each label inside its border */
+.increment button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 45px;
+    height: 45px;
+    box-sizing: border-box;
+    padding: 0;
+
+    font-family: "Cursed Timer", monospace;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27.81px;
+    color: #9AABD8;
+
+    background: transparent;
+    border: 2px solid #9AABD8;
+    border-radius: 5px;
+
+    cursor: pointer;
 }
