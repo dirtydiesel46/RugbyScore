@@ -12,6 +12,7 @@ function getMockElement(id) {
 
 const mockStorage = new Map();
 let confirmReturnValue = true;
+let confirmArg = "";
 
 global.document = {
     getElementById: (id) => getMockElement(id)
@@ -22,7 +23,10 @@ global.window = {
         getItem: (key) => (mockStorage.has(key) ? mockStorage.get(key) : null),
         setItem: (key, val) => mockStorage.set(key, String(val))
     },
-    confirm: () => confirmReturnValue
+    confirm: (msg) => {
+        confirmArg = msg;
+        return confirmReturnValue;
+    }
 };
 
 const {
@@ -50,13 +54,16 @@ function resetEnvironment() {
     mockStorage.clear();
     domElements.clear();
     confirmReturnValue = true;
+    confirmArg = "";
     render();
 }
 
-test("scoring configuration", () => {
+test("scoring configuration and initial state", () => {
     assert.deepEqual(VALID_POINTS, [2, 3, 5, 7], "Points should follow rugby scoring values");
     assert.deepEqual(VALID_TEAMS, ["home-score", "guest-score"], "Teams should be home-score and guest-score");
-    assert.equal(typeof storageKey, "string", "Storage key should be defined");
+    assert.equal(storageKey, "rugbyscore-game-v1", "Storage key must match expected key");
+    assert.deepEqual(scores, { "home-score": 0, "guest-score": 0 }, "Scores should start at zero");
+    assert.deepEqual(getHistory(), [], "History should start empty");
 });
 
 test("validAction validation", async (t) => {
@@ -89,12 +96,19 @@ test("validAction validation", async (t) => {
         assert.equal(validAction(5), false);
         assert.equal(validAction({}), false);
     });
+
+    await t.test("rejects functions with action properties", () => {
+        const fnAction = () => {};
+        fnAction.amount = 5;
+        fnAction.elementId = "home-score";
+        assert.equal(validAction(fnAction), false);
+    });
 });
 
 test("calculateScores pure logic", async (t) => {
-    await t.test("returns 0-0 for empty history", () => {
-        const totals = calculateScores([]);
-        assert.deepEqual(totals, { "home-score": 0, "guest-score": 0 });
+    await t.test("returns 0-0 when called with no arguments or empty history", () => {
+        assert.deepEqual(calculateScores(), { "home-score": 0, "guest-score": 0 });
+        assert.deepEqual(calculateScores([]), { "home-score": 0, "guest-score": 0 });
     });
 
     await t.test("calculates single scoring events", () => {
@@ -178,7 +192,7 @@ test("parseSavedGame deserialization and security", async (t) => {
 test("state machine actions: add, undo, and newGame", async (t) => {
     t.beforeEach(resetEnvironment);
 
-    await t.test("add appends valid actions and updates scores, DOM, and status", () => {
+    await t.test("add appends valid actions and updates scores, DOM, status, and localStorage", () => {
         add(5, "home-score");
         assert.equal(getHistory().length, 1);
         assert.equal(scores["home-score"], 5);
@@ -186,6 +200,10 @@ test("state machine actions: add, undo, and newGame", async (t) => {
         assert.equal(document.getElementById("home-score").textContent, 5);
         assert.equal(document.getElementById("game-status").textContent, "Home +5.");
         assert.equal(document.getElementById("undo-button").disabled, false);
+        assert.equal(
+            mockStorage.get("rugbyscore-game-v1"),
+            JSON.stringify([{ amount: 5, elementId: "home-score" }])
+        );
 
         add(3, "guest-score");
         assert.equal(getHistory().length, 2);
@@ -193,6 +211,13 @@ test("state machine actions: add, undo, and newGame", async (t) => {
         assert.equal(scores["guest-score"], 3);
         assert.equal(document.getElementById("guest-score").textContent, 3);
         assert.equal(document.getElementById("game-status").textContent, "Guest +3.");
+        assert.equal(
+            mockStorage.get("rugbyscore-game-v1"),
+            JSON.stringify([
+                { amount: 5, elementId: "home-score" },
+                { amount: 3, elementId: "guest-score" }
+            ])
+        );
     });
 
     await t.test("add rejects invalid actions without modifying state", () => {
@@ -244,6 +269,7 @@ test("state machine actions: add, undo, and newGame", async (t) => {
         assert.equal(getHistory().length, 2);
 
         newGame();
+        assert.equal(confirmArg, "Start a new game? Both scores and undo history will be cleared.");
         assert.equal(getHistory().length, 0);
         assert.equal(scores["home-score"], 0);
         assert.equal(scores["guest-score"], 0);
@@ -258,6 +284,7 @@ test("state machine actions: add, undo, and newGame", async (t) => {
         confirmReturnValue = false;
 
         newGame();
+        assert.equal(confirmArg, "Start a new game? Both scores and undo history will be cleared.");
         assert.equal(getHistory().length, 1);
         assert.equal(scores["home-score"], 5);
     });
@@ -291,8 +318,8 @@ test("storage failure and init integration", async (t) => {
     });
 
     await t.test("init restores saved game from storage", () => {
-        window.localStorage.setItem(
-            storageKey,
+        mockStorage.set(
+            "rugbyscore-game-v1",
             JSON.stringify([
                 { amount: 5, elementId: "home-score" },
                 { amount: 2, elementId: "home-score" }
@@ -307,15 +334,22 @@ test("storage failure and init integration", async (t) => {
         assert.equal(document.getElementById("undo-button").disabled, false);
     });
 
+    await t.test("init does nothing when no saved game exists in storage", () => {
+        init();
+        assert.equal(getHistory().length, 0);
+        assert.equal(scores["home-score"], 0);
+        assert.equal(document.getElementById("game-status").textContent, "");
+    });
+
     await t.test("init handles empty saved array without restored message", () => {
-        window.localStorage.setItem(storageKey, "[]");
+        mockStorage.set("rugbyscore-game-v1", "[]");
         init();
         assert.equal(getHistory().length, 0);
         assert.equal(document.getElementById("game-status").textContent, "");
     });
 
     await t.test("init handles corrupted storage gracefully", () => {
-        window.localStorage.setItem(storageKey, "{ not-valid-json");
+        mockStorage.set("rugbyscore-game-v1", "{ not-valid-json");
 
         init();
         assert.equal(getHistory().length, 0);
@@ -347,6 +381,26 @@ test("storage failure and init integration", async (t) => {
             assert.equal(document.getElementById("game-status").textContent, "Storage missing");
         } finally {
             global.window.localStorage = originalStorage;
+        }
+    });
+
+    await t.test("init does not overwrite in-memory history when localStorage has no saved game", () => {
+        setHistory([{ amount: 5, elementId: "home-score" }]);
+        mockStorage.clear();
+        init();
+        assert.equal(getHistory().length, 1);
+        assert.equal(scores["home-score"], 5);
+    });
+
+    await t.test("render, save, and init work safely when document is completely undefined", () => {
+        const originalDoc = global.document;
+        delete global.document;
+        try {
+            render();
+            save("No document");
+            init();
+        } finally {
+            global.document = originalDoc;
         }
     });
 });
