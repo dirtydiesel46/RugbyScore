@@ -20,11 +20,23 @@ You will find it deployed via Netlify @ https://rugbyscore.netlify.app/ - enjoy 
 
 Open `index.html` in your browser, or use VS Code’s Live Server extension. No installation or build step is needed.
 
+## Testing & CI
+
+Unit tests use Node.js's built-in test runner (`node:test` and `node:assert`):
+
+```bash
+npm test
+```
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs these tests automatically on pushes and pull requests targeting `main` to serve as merge checks.
+
 ## Project files
 
 - `index.html` — scoreboard structure and buttons.
 - `index.css` — layout, colours and typography.
-- `index.js` — score values and display updates.
+- `index.js` — score values, state management, and display updates.
+- `test/scoreboard.test.js` — unit tests for scoring rules, validation, undo logic, and storage persistence.
+- `.github/workflows/ci.yml` — GitHub Actions automated merge checks workflow.
 - `fonts/` — custom font and its accompanying information.
 
 ## What I practised
