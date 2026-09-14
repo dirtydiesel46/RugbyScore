@@ -1,5 +1,6 @@
 <html>
     <head>
+        <title>Rugby Scoreboard</title>
         <link rel="stylesheet" href="index.css">
     </head>
     <body>
@@ -8,18 +9,18 @@
                 <h3>HOME</h3>
                 <div class=score id="home-score"></div>
                 <div class="increment">
-                    <button onclick="add(1, 'home-score')" id="home-add-1">+1</button>
-                    <button onclick="add(2, 'home-score')" id="home-add-2">+2</button>
-                    <button onclick="add(3, 'home-score')" id="home-add-3">+3</button>
+                    <button onclick="add(2, 'home-score')" id="home-add-conversion"><span class="point-label">Conversion</span><span>+2</span></button>
+                    <button onclick="add(3, 'home-score')" id="home-add-penalty"><span class="point-label">Penalty goal</span><span>+3</span></button>
+                    <button onclick="add(5, 'home-score')" id="home-add-try"><span class="point-label">Try</span><span>+5</span></button>
                 </div>
             </div>
             <div>
                 <h3>GUEST</h3>
                 <div  class=score id="guest-score"></div>
                 <div class="increment">
-                    <button onclick="add(1, 'guest-score')" id="guest-add-1">+1</button>
-                    <button onclick="add(2, 'guest-score')" id="guest-add-2">+2</button>
-                    <button onclick="add(3, 'guest-score')" id="guest-add-3">+3</button>
+                    <button onclick="add(2, 'guest-score')" id="guest-add-conversion"><span class="point-label">Conversion</span><span>+2</span></button>
+                    <button onclick="add(3, 'guest-score')" id="guest-add-penalty"><span class="point-label">Penalty goal</span><span>+3</span></button>
+                    <button onclick="add(5, 'guest-score')" id="guest-add-try"><span class="point-label">Try</span><span>+5</span></button>
                 </div>
             </div>
         </div>

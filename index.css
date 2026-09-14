@@ -29,6 +29,10 @@ body {
     color: #FFB81C;
 }
 
+.container > div {
+    width: 215px;
+}
+
 /* Team headings: remove the browser's default margins */
 .container h3 {
     margin: 0;
@@ -41,7 +45,7 @@ body {
 .score {
     width: 155px;
     height: 120px;
-    margin-top: 21px;
+    margin: 21px auto 0;
 
     font-family: "Cursed Timer", monospace;
     font-size: 90px;
@@ -62,14 +66,15 @@ body {
     margin-top: 26px;
 }
 
-/* Point buttons: centre each label inside its border */
+/* Rugby buttons: scoring name above the points added */
 .increment button {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 
-    width: 45px;
-    height: 45px;
+    width: 65px;
+    height: 60px;
     box-sizing: border-box;
     padding: 0;
 
@@ -84,4 +89,12 @@ body {
     border-radius: 5px;
 
     cursor: pointer;
+}
+
+/* Use a readable font for the longer scoring names */
+.point-label {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    line-height: 16px;
+    white-space: nowrap;
 }

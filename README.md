@@ -1,11 +1,13 @@
-# Basketball Scoreboard
+# Rugby Scoreboard
 
-A small basketball scoreboard built with HTML, CSS and JavaScript as part of Scrimba’s JavaScript Fundamentals course, following the supplied Figma design.
+A small rugby scoreboard built with HTML, CSS and JavaScript. Originally a Scrimba basketball scoreboard exercise based on a Figma design, adapted with Springbok-inspired green and gold colours.
 
 ## Features
 
 - Separate Home and Guest scores, starting at zero.
-- Add 1, 2 or 3 points to either team.
+- Add a conversion (+2), penalty goal (+3), or try (+5) to either team.
+- For a converted try, click Try and then Conversion: 5 + 2 = 7.
+- Fixed 575 × 385px board with named scoring buttons.
 - Digital-style numbers using the Cursed Timer font.
 - Scores reset when the page is refreshed.
 
@@ -23,3 +25,7 @@ Open `index.html` in your browser, or use VS Code’s Live Server extension. No 
 ## What I practised
 
 Translating Figma measurements into CSS, using Flexbox, loading a custom font, and keeping score values in JavaScript while updating the HTML display.
+
+## Rugby scoring
+
+These buttons cover tries, conversions and penalty goals. A drop goal also earns 3 points, and a penalty try earns 7; neither has a dedicated button in this simple version. See [World Rugby’s scoring rules](https://passport.world.rugby/laws-of-the-game/laws-by-number/8-scoring).
