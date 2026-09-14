@@ -2,6 +2,8 @@
 
 RugbyScore is a small rugby scoreboard built with HTML, CSS and JavaScript as a Scrimba learning project, with Springbok-inspired green and gold colours.
 
+You will find it deployed via Netlify @ https://rugbyscore.netlify.app/ - enjoy :)
+
 ## Features
 
 - Separate Home and Guest scores, starting at zero.
