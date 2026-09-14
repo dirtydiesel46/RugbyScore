@@ -7,5 +7,10 @@
   },
   "reporters": ["progress", "clear-text", "html"],
   "coverageAnalysis": "off",
-  "concurrency": 2
+  "concurrency": 2,
+  "thresholds": {
+    "high": 95,
+    "low": 90,
+    "break": 90
+  }
 }
